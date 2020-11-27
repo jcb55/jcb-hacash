@@ -236,11 +236,11 @@ Handling fee bidding explanation 2: When the transaction is still in the trading
 
 | Query | Arguments | Mandatory | Notes |
 | ---- | ---- | ---- | ---- |
-| balances | adress_list, unitmei, kind,  |address_list| up to 200 comma, delmited addresses , kind : hsd, unitmei : boolean |
+| balances | address_list, unitmei, kind,  |address_list| up to 200 comma, delmited addresses , kind : hsd, unitmei : boolean |
 | diamond | name or number | name or number | singleton returns diamond information |
 | last_block |  | | returns height |
 | block_intro | height or hash | height or hash | returns block headers |
-| scan_value_transfers | height, txhash, txposi, kind, unitmei| height or txhash| returns list of transcations for block height or transaction hash starting from txposi ? |
+| scan_value_transfers | height, txhash, txposi, kind, unitmei| height or txhash| returns transaction for block height index txposi (default=0) |
 
 
 
@@ -314,123 +314,6 @@ The above two interfaces return the same content:
 In a production environment, please save the above return value in the database for reconciliation, or resubmit unconfirmed transactions when the blockchain network is delayed. The above content does not reveal your private key, but only the transaction data after the signature, please rest assured to store it.
 
 Create BTC transfer and block diamond transfer, the return value of calling the interface is the same as the above.
-
-##### 1.2.2 Create one-way Bitcoin ordinary transfer transaction
-
-Pass the parameter `transfer_kind=satoshi`, and add the following parameters:
-
- -amount [int] The amount of bitcoins to be paid, in units of "satoshi" and "satoshi" (0.00000001 bitcoins); for example, transfer 10 bitcoins to transfer "1000000000", transfer 0.01 bitcoins to transfer "1000000"; system Bitcoin units below 1 satoshi are not supported.
- -to_address [string] Counter (receiving) account address
-
-For example, to transfer a bit of an address token, the example interfaces such as: ``[http://rpcapi.hacash.org/create?action=value_transfer_tx&main_prikey=8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92&fee=0.0001&unitmei=true&timestamp=1603284999&transfer_kind=satoshi&amount=100000000&to_address=1NLEYVmmUkhAH18WfCUDc5CHnbr7Bv5TaS] ``
-
-##### 1.2.3 Create block diamond transfer transaction
-
-Pass the parameter `transfer_kind=diamond`, and add the following parameters:
-
- -diamonds [string] The literal value of diamonds separated by commas, such as "EVUNXZ,BVVTSI", one or more can be transferred, and up to 200 diamonds can be transferred in one batch
- -diamond_owner_prikey [hex string] Optional, the account private key of the payment (payment of diamonds, diamond owner); if not passed, the default is `main_prikey`
- -to_address [string] The account address of the other party (receiving diamonds)
-
-Interface call Example:
-``[http://rpcapi.hacash.org/create?action=value_transfer_tx&main_prikey=8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92&fee=0.0003&unitmei=true&timestamp=1603284999&transfer_kind=diamond&diamonds=EVUNXZ,BVVTSI&diamond_owner_prikey=EF797C8118F02DFB649607DD5D3F8C7623048C9C063D532CC95C5ED7A898A64F&to_address=1NLEYVmmUkhAH18WfCUDc5CHnbr7Bv5TaS] (http://rpcapi.hacash.org /create?action=value_transfer_tx&main_prikey=8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92&fee=0.0003&unitmei=true&timestamp=1603284999&transfer_kind=diamond&diamonds=EVUNXZ,BVVTSI&diamond_owner_prikey=EF797C8118F02DFB649607DD5D3F8C7623048C9C063D532CC95C5ED7A898A64F&to_address=1NLEYVmmUkhAH18WfCUDc5CHnbr7Bv5TaS)``
-
-
----
-
-## 2. /submit Submit
-
-#### 2.1 Submit a transaction to the transaction pool `POST: /submit? Action=transaction`
-
-Submit a transaction to the memory pool of the entire network.
-
-The url parameters are as follows:
-
- -hexbody [bool] Pass the post body value in the form of hex string; otherwise pass it in the form of native bytes
-
-The return value after the call is as follows
-
-```js
-{
-    ret: 0 // ret = 0 means return success
-}
-```
-
-Or return an error
-
-```js
-{
-    ret: 1 // ret = 1 means submitting a transaction error
-    // For example, if the balance is insufficient, the error message is as follows:
-    errmsg: "address 1MzNY1oA3kfgYi75zquj3SRUPYztzXHzK9 balance \u311c0:0 not enough, need \u311c1,245:246."
-}
-```
-Example of curl command line test call:
-
-```shell script
-curl "http://rpcapi.hacash.org/submit?action=transaction&hexbody=1" -X POST -d "02005f90300700e63c33a796b3032ce6b856f68fccf06608d9ed18f401010001000100e9fdd992667de1734f0ef758bafcd517179e6f1bf60204dd00010231745adae24044ff09c3541537160abb8d5d720275bbaeed0b3d035b1e8b263cb73b724218f13c09c16e7065212128cf0c037ebb9e588754eb073886486d950607d59bef462d2731e15b667c6ff1f0badd6259c6f58d5ca7a5f75856b8cae8e80000"
-```
-
-Handling fee bidding description 1: After the transaction is submitted, when you need to pay a higher handling fee as a diamond bid, or increase the handling fee to speed up the transaction confirmation, you can call the `/create` interface to create the same transfer transaction again, and only modify the amount The higher `fee` field (all other fields including the timestamp must be consistent, otherwise it will be two different transactions), and then resubmit the transaction, the entire network will discard the lower fee and pack this A transaction with a higher fee bid. All different fee bids are regarded as different states of a transaction, no matter how many bids are made, there will be only one package in the end.
-
-Handling fee bidding explanation 2: When the transaction is still in the trading pool, you can call the `/operate` interface to modify the handling fee bidding more conveniently without resubmitting the entire transaction content. For interface description, see the content at the bottom of the document.
-
----
-
-## 3. /query Query
-
-
- Summary of queries
-
-
-
-
-#### 3.1 Query account balance `GET: /query? Action=balances`
-
-Check the HAC, BTC, and diamond balances of one or more accounts at once.
-
-Pass parameters:
-
- -address_list [string] A comma-separated list of account addresses; up to 200 batch queries
- -unitmei [bool] Whether to return a floating-point number string in units of "pieces"; otherwise, it returns a standard unit
- -kind [menu] Query the type of return; `kind=h` only returns HAC balance, `kind=hs` returns HAC, BTC balance, if you do not pass or pass `hsd`, all types of balances are returned
-
- Example Interface:
- ``[http://rpcapi.hacash.org/query?action=balances&unitmei=1&address_list=18Yt6UbnDKaXaBaMPnBdEHomRYVKwcGgyH,1DYY4ZRsWnhjcwwnE3dWgtiqe2mctDS2HF] (http://rpcapi.hacash.org/query?action=balances&unitmei=1&address_list=18Yt6UbnDKaXaBaMPnBdEHomRYVKwcGgyH,1DYY4ZRsWnhjcwwnE3dWgtiqe2mctDS2HF)``
-
- Example return value:
-
- ```js
-{
-    ret: 0, // general return value
-    list: [
-        {
-            diamond: 350, // the number of diamonds
-            hacash: "3101.0826", // HAC balance
-            satoshi: 0 // BTC balance, unit "satoshi": satoshi
-        },
-        {
-            diamond: 0,
-            hacash: "3842.24693214",
-            satoshi: 0
-        }
-    ]
-}
-```
-Note: The returned balance list corresponds to the position of the passed account list.
-
-#### 3.2 Query block diamond information `GET: /query? Action=diamond`
-
-Query detailed information such as the hash of a diamond, the height of the generated block, and the current address, etc.; you can query by diamond literal (name) or label (number).
-
-Pass parameters:
-
- -name [string] Diamond literal value, for example: "ZAKXMI"
- -number [int] Diamond label, for example: "20001"
-
-Example query interface 1: ``[http://rpcapi.hacash.org/query?action=diamond&number=20001](http://rpcapi.hacash.org/query?action=diamond&number=20001)``
-
-Example query interface 1: ``[http://rpcapi.hacash.org/query?action=diamond&name=ZAKXMI](http://rpcapi.hacash.org/query?action=diamond&name=ZAKXMI)``
 
 The above two interfaces return the same content:
 
