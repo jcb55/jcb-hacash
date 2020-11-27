@@ -305,26 +305,6 @@ The above two interfaces return the same content:
     nonce: "00000000c9babb01", // random number mined
     contain_block_height: 179610, // The height of the block being mined
     contain_block_hash: "0000000010914f286cc035ee35ae0afc6294417adb775dddf25b3bd
-    856f68fccf06608d9ed18f401010001000100e9fdd992667de1734f0ef758bafcd517179e6f1bf60204dd00010231745adae24044ff09c3541537160abb8d5d720275bbaeed0b3d035b1e8b263cb73b724218f13c09c16e7065212128cf0c037ebb9e588754eb073886486d950607d59bef462d2731e15b667c6ff1f0badd6259c6f58d5ca7a5f75856b8cae8e80000 ",
-    // timestamp used in the transaction
-    timestamp: 1603284999
-}
-```
-
-In a production environment, please save the above return value in the database for reconciliation, or resubmit unconfirmed transactions when the blockchain network is delayed. The above content does not reveal your private key, but only the transaction data after the signature, please rest assured to store it.
-
-Create BTC transfer and block diamond transfer, the return value of calling the interface is the same as the above.
-
-The above two interfaces return the same content:
-
-```js
-{
-    ret: 0, // public return value
-    number: 20001, // Diamond number
-    name: "ZAKXMI", // Diamond name/literal value
-    nonce: "00000000c9babb01", // random number mined
-    contain_block_height: 179610, // The height of the block being mined
-    contain_block_hash: "0000000010914f286cc035ee35ae0afc6294417adb775dddf25b3bd
     cwwnE3dWgtiqe2mctDS2HF to cover the transaction fee
             ai: 8,
             diamonds: "XMYVEM",
